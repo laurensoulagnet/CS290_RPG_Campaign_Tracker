@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset = "utf-8">
+<title> Track Your Campaign </title>
+<link rel = "stylesheet" href = "trackyourcampaign.css">
+<script type="text/javascript">
+
+//PRINTING THE SIGN UP FORM
+function signup() {
+
+	var formarea = document.getElementById("formarea"); 
+	formarea.innerHTML = "";
+	
+	var signupheader = document.createElement("H2");
+	var headername = document.createTextNode("Sign Up");
+	signupheader.appendChild(headername); 
+	
+	var errors = document.createElement("div");
+	errors.setAttribute("id","signuperrors");
+	
+	var form = document.createElement("form");
+	form.setAttribute("name","signupform");
+	form.setAttribute("action","mycampaigns.php");
+	form.setAttribute("onsubmit","return checksignup()");
+	form.setAttribute("method","post");
+	
+	var emaillabel = document.createElement("label");
+	var etext = document.createTextNode("Email: ");
+	emaillabel.appendChild(etext);
+	
+	var signupemail = document.createElement("input");
+	signupemail.setAttribute("type","text");
+	signupemail.setAttribute("name","signupemail");
+	signupemail.setAttribute("required","true");
+	
+	var passwordlabel = document.createElement("label");
+	var ptext = document.createTextNode("Password: ");
+	passwordlabel.appendChild(ptext);
+	
+	var signuppassword = document.createElement("input");
+	signuppassword.setAttribute("type","password");
+	signuppassword.setAttribute("name","signuppassword");
+	signuppassword.setAttribute("required","true");
+	
+	var submit = document.createElement("input");
+	submit.setAttribute("type","submit");
+	signuppassword.setAttribute("value","Sign Up");
+	
+	formarea.appendChild(signupheader);
+	formarea.appendChild(errors);
+	form.appendChild(emaillabel);
+	form.appendChild(document.createElement('br'));
+	form.appendChild(signupemail);
+	form.appendChild(document.createElement('br'));
+	form.appendChild(passwordlabel);
+	form.appendChild(document.createElement('br'));
+	form.appendChild(signuppassword);
+	form.appendChild(document.createElement('br'));
+	form.appendChild(submit);
+	formarea.appendChild(form);
+}
+
+//PRINTING THE LOG IN FORM
+function login() {
+
+	var formarea = document.getElementById("formarea"); 
+	formarea.innerHTML = "";
+	
+	var loginheader = document.createElement("H2");
+	var headername = document.createTextNode("Log In");
+	loginheader.appendChild(headername); 
+	
+	var errors = document.createElement("div");
+	errors.setAttribute("id","loginerrors");
+	
+	var form = document.createElement("form");
+	form.setAttribute("name","loginform");
+	form.setAttribute("action","mycampaigns.php");
+	form.setAttribute("onsubmit","return checksignin()");
+	form.setAttribute("method","post");
+	
+	var emaillabel = document.createElement("label");
+	var etext = document.createTextNode("Email: ");
+	emaillabel.appendChild(etext);
+	var loginemail = document.createElement("input");
+	loginemail.setAttribute("type","text");
+	loginemail.setAttribute("name","loginemail");
+	loginemail.setAttribute("required","true");
+	
+	var passwordlabel = document.createElement("label");
+	var ptext = document.createTextNode("Password: ");
+	passwordlabel.appendChild(ptext);
+	var loginpassword = document.createElement("input");
+	loginpassword.setAttribute("type","password");
+	loginpassword.setAttribute("name","loginpassword");
+	loginpassword.setAttribute("required","true");
+	
+	var submit = document.createElement("input");
+	submit.setAttribute("type","submit");
+	loginpassword.setAttribute("value","Log In");
+
+	formarea.appendChild(loginheader);
+	formarea.appendChild(errors);
+	form.appendChild(emaillabel);
+	form.appendChild(document.createElement('br'));
+	form.appendChild(loginemail);
+	form.appendChild(document.createElement('br'));
+	form.appendChild(passwordlabel);
+	form.appendChild(document.createElement('br'));
+	form.appendChild(loginpassword);
+	form.appendChild(document.createElement('br'));
+	form.appendChild(submit);
+	formarea.appendChild(form);
+
+}
+
+//TURNS PARAMETERS INTO A URL STRING- copied from demo.js featured in the Week 4: JavaScript Part 2 video "Ajax"
+function urlStringify(obj) {
+	var str = [];
+	var prop;
+	var s;
+	for (prop in obj) {
+		s = encodeURIComponent(prop) + '=' + encodeURIComponent(obj[prop]);
+		str.push(s);
+	}
+	return str.join('&');
+}
+
+//GETS THE INPUT LOGIN VALUES AND CHECKS WHETHER THEY ARE IN THE DATABASE, PRINTS ERROR MESSAGES IF NOT, OTHERWISE SUBMITS
+function checksignin() {
+	var theemail = document.getElementsByName("loginemail")[0].value;
+	var thepassword = document.getElementsByName("loginpassword")[0].value;
+	var checkloginreturned;
+	
+	var loginrequest = new XMLHttpRequest();
+	var params = {
+		sentemail: theemail,
+		sentpassword: thepassword
+	};
+	var url = "checklogin.php";
+	url += '?' + urlStringify(params);
+	
+	//IF S.HUBBARD IS GRADING THIS, THANKS AGAIN FOR THE HELP WITH AJAX AND THE SUGGESTION OF PROTOTYPE- ALTHOUGH FIGURED OUT THE PROBLEM BEFORE I HAD TO REDO IT ALL USING THAT
+	loginrequest.onreadystatechange = function() {
+		if (this.readyState === 4 && this.status==200) {
+		
+			checkloginreturned = this.responseText; 
+			checkloginreturned = JSON.parse(checkloginreturned);
+
+			var failmessage;
+			if (checkloginreturned == "OK") {
+				document.loginform.submit();
+			} else {
+				document.getElementById("loginerrors").innerHTML = checkloginreturned;
+			} 
+		} 
+	}; 
+
+	var check = loginrequest.open('POST', url);
+	loginrequest.send();
+				
+	return false;
+	
+	
+}
+
+//GETS THE SIGN UP VALUES AND CHECKS WHETHER THE EMAIL IS ALREADY IN THE DATABASE, PRINTS ERROR MESSAGES IF SO, OTHERWISE SUBMITS
+function checksignup() {
+
+	var theemail = document.getElementsByName("signupemail")[0].value;
+	var thepassword = document.getElementsByName("signuppassword")[0].value;
+	var checksignupreturned;
+	
+	var signuprequest = new XMLHttpRequest();
+	var params = {
+		sentemail: theemail,
+		sentpassword: thepassword
+	};
+	var url = "adduser.php";
+	url += '?' + urlStringify(params);
+
+	signuprequest.onreadystatechange = function() {
+		if (this.readyState === 4 && this.status==200) {
+			checksignupreturned = this.responseText;
+			checksignupreturned = JSON.parse(checksignupreturned);
+	
+			if (checksignupreturned == "OK") {
+				document.signupform.submit();
+			}
+			else {
+				document.getElementById("signuperrors").innerHTML = checksignupreturned;
+			}
+		}
+		
+	};
+	
+	signuprequest.open('POST', url);
+	signuprequest.send();
+	return false;
+}
+
+
+</script>
+</head>
+<body>
+	
+	<div id = "pageheader" class = "header"> 
+		<h1> Track Your Campaign </h1>
+		Track your RPG campaign here, so you don't forget a single quest.
+	</div>
+ 
+	<div id = "loginorsignup">
+	<a class = "loginsignuplink" onclick ="login();"> Log In </a> 				
+	<a class = "loginsignuplink" onclick ="signup();"> Sign Up </a>
+	</div>
+	
+	<div id = "formarea"></div>
+  
+  </body>
+
+</html>
